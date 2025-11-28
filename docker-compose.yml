@@ -20,6 +20,10 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
+    deploy:
+        resources:
+          limits:
+            memory: ${API_MEM_LIMIT:-512m}
 
   db:
     image: postgres:15
@@ -35,6 +39,10 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: ${DB_MEM_LIMIT:-512m}
 
   nginx:
     image: nginx:stable
