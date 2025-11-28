@@ -1,4 +1,4 @@
-# DevOps Intern Take-Home Assignment
+# DevOps Intern Take-Home Assignment [Branch]
 
 This project is an end-to-end DevOps implementation for Branch’s Loan API. It's converting a laptop-only microloan service into a production-grade, containerized application with multi-environment Docker setups, secure HTTPS ingress, PostgreSQL persistence, automated CI/CD pipelines, and full operational visibility.
 
@@ -6,7 +6,12 @@ This project is an end-to-end DevOps implementation for Branch’s Loan API. It'
 
 ---
 
-# 1. Run the Application Locally (Step‑by‑Step)
+# A simple architecture diagram showing how the components connect
+<img width="1007" height="548" alt="Screenshot from 2025-11-28 22-09-42" src="https://github.com/user-attachments/assets/2b088703-960e-44b9-912a-ff49ced9327a" />
+
+---
+
+# 1. Run the application locally (step-by-step instructions)
 
 ## Prerequisites
 - Docker & Docker Compose
@@ -15,7 +20,7 @@ This project is an end-to-end DevOps implementation for Branch’s Loan API. It'
 ```
 127.0.0.1  branchloans.com
 ```
-- Clone the Repositry
+- Clone the Repositry **[Private Repositry]**
 ```
 git clone https://Shikhrshukla:<GITHUB_TOKEN>@github.com/Shikhrshukla/branch-sample-app.git
 cd branch-sample-app
@@ -26,6 +31,7 @@ cd branch-sample-app
 Inside `nginx/ssl/`:
 
 ```
+cd nginx/ssl
 mkcert branchloans.com
 mv branchloans.com.pem branchloans.crt
 mv branchloans.com-key.pem branchloans.key
@@ -44,10 +50,14 @@ docker compose up -d --build
 ```
 curl -k https://branchloans.com/health
 ```
+and,
+```
+curl -k https://branchloans.com/api/loans
+```
 
 ---
 
-# 2. Switching Between Environments
+# 2. Switch between different environments (dev/staging/production)
 
 The application supports:
 - **Development** (`.env.dev`)
@@ -73,16 +83,19 @@ Each environment overrides:
 
 ### Development
 ```
+ENV_FILE=.env.dev docker compose build --no-cache api
 ENV_FILE=.env.dev docker compose up -d
 ```
 
 ### Staging
 ```
+ENV_FILE=.env.staging docker compose build --no-cache api
 ENV_FILE=.env.staging docker compose up -d
 ```
 
 ### Production
 ```
+ENV_FILE=.env.prod docker compose build --no-cache api
 ENV_FILE=.env.prod docker compose up -d
 ```
 
@@ -141,6 +154,9 @@ The pipeline is split into four jobs:
  - `:latest`
  - `:${{ github.sha }}`
 
+## Diagram
+<img width="2816" height="1536" alt="Gemini_Generated_Image_m0awpym0awpym0aw" src="https://github.com/user-attachments/assets/cadff97d-22f7-4cdf-ab8a-3ce7c4c2a3ed" />
+
 ---
 
 # 5. Project Structure
@@ -193,15 +209,47 @@ docker ps
 ```
 
 >Verify it on Browser `localhost:8000/health` and `localhost:8000/api/loans`
----
-
-# 7. Deployment Notes
-- Production uses persistent volumes for PostgreSQL
-- App is served over HTTPS through NGINX reverse proxy
-- Gunicorn runs behind NGINX for performance & stability
-- Multi-environment Compose ensures consistent deployments
 
 ---
 
-# 8. License
+# 8. Design Decisions:
+
+## Document why you chose certain approaches
+- Chose `Docker + Compose` to ensure identical environments across dev, staging, and production.
+- Used `Nginx for HTTPS` termination because it is lightweight and easy to configure.
+- Added entrypoint scripts to automate migrations and seeding to remove manual steps.
+- Implemented multi-environment `.env` files to separate credentials, logging, and resource usage.
+- Used GitHub Actions because it integrates natively with GitHub and supports Docker workflows well.
+
+## Trade-offs
+- `Docker Compose` not as powerful as `Kubernetes` for autoscaling, Compose is simpler and faster for an internship task.
+- Running migrations automatically on container start is convenient but not ideal for large production databases.
+- Using `mkcert or OpenSSL for SSL` is good for local development but not for real certificates in production.
+
+## What I Would Improve With More Time
+- Add `Prometheus + Grafana` for metrics.
+- Add proper secrets management using `Vault`.
+- Move to Kubernetes (Helm/Terraform) for autoscaling and robust resource enforcement.
+- Automated DB backups, restore tests, and retention policies.
+
+---
+
+# 9. Troubleshooting
+
+## Common Issues
+- **500 error on /api/loans:** Migrations or seed did not run → fix entrypoint or check DB connection.
+- **Nginx showing bad gateway:** API container not healthy → check docker compose logs api.
+- **Certificate errors:** mkcert not installed or wrong domain in /etc/hosts.
+- **DB connection errors:** Wrong password in .env or Postgres container not fully healthy.
+- **Compose warning:** version is obsolete, so remove the top-level version: "3.9" line from docker-compose.yml.
+
+## How to Check if Everything Is Running Correctly
+- **Check container status:** docker ps
+- **View API logs:** docker compose logs api
+- **Verify DB is healthy:** docker compose exec db pg_isready
+- **Test health endpoint:** `curl -k https://branchloans.com/health` and `curl -k https://branchloans.com/api/loans`
+
+---
+
+# 10. License
 This project is for assessment and demonstration purposes only.
