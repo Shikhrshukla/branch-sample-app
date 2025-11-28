@@ -1,60 +1,176 @@
-# Flask Microloans API + Postgres (Docker)
+# Loan API – Containerized Microloans Service
 
-Minimal REST API for microloans, built with Flask, SQLAlchemy, Alembic, and PostgreSQL (via Docker Compose).
+A production-ready, containerized Flask microloans API using PostgreSQL, Docker, multi‑environment Compose setups, and a full CI/CD pipeline (GitHub Actions).
 
-## Quick start
+---
 
-```bash
-# 1) Build and start services
-docker compose up -d --build
+# 1. Run the Application Locally (Step‑by‑Step)
 
-# 2) Run DB migrations
-docker compose exec api alembic upgrade head
+## Prerequisites
+- Docker & Docker Compose
+- mkcert installed (for HTTPS)
+- Domain mapped in `/etc/hosts`
 
-# 3) Seed dummy data (idempotent)
-docker compose exec api python scripts/seed.py
-
-# 4) Hit endpoints
-curl http://localhost:8000/health
-curl http://localhost:8000/api/loans
+```
+127.0.0.1  branchloans.com
 ```
 
-## Configuration
+## Step 1 — Generate local HTTPS certificates (mkcert)
 
-See `.env.example` for env vars. By default:
-- `DATABASE_URL=postgresql+psycopg2://postgres:postgres@db:5432/microloans`
-- API listens on `localhost:8000`.
+Inside `nginx/ssl/`:
 
-## API
-
-- GET `/health` → `{ "status": "ok" }`
-- GET `/api/loans` → list all loans
-- GET `/api/loans/:id` → get loan by id
-- POST `/api/loans` → create loan (status defaults to `pending`)
-
-Example create:
-```bash
-curl -X POST http://localhost:8000/api/loans \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "borrower_id": "usr_india_999",
-    "amount": 12000.50,
-    "currency": "INR",
-    "term_months": 6,
-    "interest_rate_apr": 24.0
-  }'
+```
+mkcert branchloans.com
+mv branchloans.com.pem branchloans.crt
+mv branchloans.com-key.pem branchloans.key
 ```
 
-- GET `/api/stats` → aggregate stats: totals, avg, grouped by status/currency.
+## Step 2 — Start services
 
-## Development
+Development:
 
-- App entrypoint: `wsgi.py` (`wsgi:app`)
-- Flask app factory: `app/__init__.py`
-- Models: `app/models.py`
-- Migrations: `alembic/`
+```
+docker compose --env-file .env.dev up -d --build
+```
 
-## Notes
+Staging:
 
-- Amounts are validated server-side (0 < amount ≤ 50000).
-- No authentication for this prototype.
+```
+docker compose --env-file .env.staging up -d --build
+```
+
+Production:
+
+```
+docker compose --env-file .env.prod up -d --build
+```
+
+## Step 3 — Test your API
+
+```
+curl -k https://branchloans.com/health
+```
+
+---
+
+# 2. Switching Between Environments
+
+The application supports:
+- **Development** (`.env.dev`)
+- **Staging** (`.env.staging`)
+- **Production** (`.env.prod`)
+
+Each environment overrides:
+- Database credentials
+- Log levels 
+- Persistence settings 
+- Resource configs 
+
+## Commands
+
+### Development
+```
+docker compose --env-file .env.dev up -d --build
+```
+
+### Staging
+```
+docker compose --env-file .env.staging up -d --build
+```
+
+### Production
+```
+docker compose --env-file .env.prod up -d --build
+```
+
+Stop containers:
+
+```
+docker compose down
+```
+
+---
+
+# 3. Environment Variables (Explained)
+
+| Variable | Description |
+|---------|-------------|
+| `POSTGRES_USER` | PostgreSQL username |
+| `POSTGRES_PASSWORD` | PostgreSQL password |
+| `POSTGRES_DB` | Database name |
+| `DATABASE_URL` | SQLAlchemy DB URI |
+| `API_PORT` | Flask/Gunicorn port |
+| `API_LOG_LEVEL` | App log level (DEBUG/INFO/WARNING) |
+| `PERSIST_DB` | Whether DB should be persistent between restarts |
+| `POSTGRES_IMAGE` | PostgreSQL version used |
+| `PYTHONPATH` | Ensures `app/` is importable |
+
+---
+
+# 4. CI/CD Pipeline (GitHub Actions)
+
+The pipeline is split into four jobs:
+
+## **1. tests**
+- Installs dependencies
+- Runs pytest unit tests
+- Ensures the app loads and routes exist
+
+## **2. build**
+- Builds Docker image using Buildx
+- Tags image with `${{ github.sha }}`
+- Saves image as artifact
+
+## **3. scan**
+- Loads the built Docker image
+- Scans image using **Trivy** for vulnerabilities
+- Does **not** fail the pipeline on severity (configurable)
+
+## **4. push**
+- Runs **only** on `main` branch
+- Logs in to Docker Hub
+- Pushes image with:
+ - `:latest`
+ - `:${{ github.sha }}`
+
+---
+
+# 5. Project Structure
+
+```
+dummy-branch-app/
+│
+├── app/         # Flask app
+├── alembic/       # DB migrations
+├── scripts/       # Seeder
+├── nginx/        # HTTPS reverse proxy
+├── tests/        # Pytest suite
+├── Dockerfile
+├── docker-compose.yml
+├── entrypoint.sh
+├── .env.*        # Environment configs
+└── README.md
+```
+
+---
+
+# 6. Local Testing
+
+Run tests:
+
+```
+pytest -q
+```
+
+---
+
+# 7. Deployment Notes
+- Production uses persistent volumes for PostgreSQL
+- App is served over HTTPS through NGINX reverse proxy
+- Gunicorn runs behind NGINX for performance & stability
+- Multi-environment Compose ensures consistent deployments
+
+---
+
+# 8. License
+This project is for assessment and demonstration purposes only.
