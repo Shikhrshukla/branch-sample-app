@@ -37,6 +37,7 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
+          load: true
           push: false
           tags: |
             ${{ env.IMAGE_REPO }}:${{ github.sha }}
