@@ -6,6 +6,9 @@ This project is an end-to-end DevOps implementation for Branch’s Loan API. It'
 
 ---
 
+# Architecture Diagram
+<img width="2816" height="1536" alt="Gemini_Generated_Image_uzd6fquzd6fquzd6" src="https://github.com/user-attachments/assets/10baecaa-ba71-4156-a132-854b2ca40ebf" />
+
 # 1. Run the Application Locally (Step‑by‑Step)
 
 ## Prerequisites
