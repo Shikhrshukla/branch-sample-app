@@ -9,14 +9,6 @@ This project is an end-to-end DevOps implementation for Branch’s Loan API. It'
 
 ---
 
-<<<<<<< Updated upstream
-=======
-# A simple architecture diagram showing how the components connect
-<img width="1007" height="548" alt="Screenshot from 2025-11-28 22-09-42" src="https://github.com/user-attachments/assets/2b088703-960e-44b9-912a-ff49ced9327a" />
-
----
-
->>>>>>> Stashed changes
 # 1. Run the application locally (step-by-step instructions)
 
 ## Prerequisites
@@ -37,13 +29,9 @@ cd branch-sample-app
 Inside `nginx/ssl/`:
 
 ```
-<<<<<<< Updated upstream
 cd nginx
 mkdir ssl
 cd ssl
-=======
-cd nginx/ssl
->>>>>>> Stashed changes
 mkcert branchloans.com
 mv branchloans.com.pem branchloans.crt
 mv branchloans.com-key.pem branchloans.key
@@ -77,18 +65,11 @@ docker compose down -v
 curl -k https://branchloans.com/health
 curl -k https://branchloans.com/api/loans
 ```
-<<<<<<< Updated upstream
 > Retry this cmd in some time.
 > This is secure but, it will show that the CA is not valid / Unknown issuer
 
 <img width="1312" height="604" alt="image" src="https://github.com/user-attachments/assets/4fe5106c-6759-4f05-9491-c1fe2c5819a1" />
 <img width="826" height="342" alt="image" src="https://github.com/user-attachments/assets/a478780d-7bd3-4f15-9382-a3022c4a14df" />
-=======
-and,
-```
-curl -k https://branchloans.com/api/loans
-```
->>>>>>> Stashed changes
 
 ---
 
