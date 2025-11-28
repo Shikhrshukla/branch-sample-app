@@ -15,7 +15,7 @@ This project is an end-to-end DevOps implementation for Branch’s Loan API. It'
 
 ## Prerequisites
 - Docker & Docker Compose
-- mkcert installed (for HTTPS)
+- `OpenSSL / mkcert` installed (for HTTPS)
 - Domain mapped in `/etc/hosts`
 ```
 127.0.0.1  branchloans.com
@@ -31,10 +31,13 @@ cd branch-sample-app
 Inside `nginx/ssl/`:
 
 ```
-cd nginx/ssl
+cd nginx
+mkdir ssl
+cd ssl
 mkcert branchloans.com
 mv branchloans.com.pem branchloans.crt
 mv branchloans.com-key.pem branchloans.key
+cd ../..
 ```
 
 ## Step 2 - Start services
@@ -42,8 +45,9 @@ mv branchloans.com-key.pem branchloans.key
 Development:
 
 ```
-docker compose up -d --build
+docker compose up -d --build  
 ```
+>Retry this cmd if any Container fails
 
 ## Step 3 - Test your API
 
