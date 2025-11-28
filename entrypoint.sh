@@ -1,12 +1,11 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
-# Run migrations
+echo "Applying migrations..."
 alembic upgrade head || true
 
-# Seed data (idempotent — won't duplicate)
+echo "Seeding data..."
 python scripts/seed.py || true
 
-# Start the actual API server
-gunicorn -b 0.0.0.0:8000 wsgi:app
-
+echo "Starting API..."
+exec gunicorn -b 0.0.0.0:8000 wsgi:app
