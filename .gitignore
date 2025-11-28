@@ -1,3 +1,8 @@
+# Ignore entire SSL directory
 nginx/ssl/
+
+# Ignore all certificate/private key file patterns anywhere
 *.crt
 *.key
+*.pem
+*.csr
